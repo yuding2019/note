@@ -51,7 +51,7 @@ function useBatchUpdate(_dispatch) {
   let payload = {};
 
   return function wrap(newState) {
-    // 将每次触发的state收集起来，相当于在这里先进行“更新”
+    // 将每次触发的state收集起来
     // 这样异步更新时，就是利用闭包获取最新的payload去更新state
     payload = {
       ...payload,
