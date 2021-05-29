@@ -46,7 +46,7 @@ function createStore(reducer, initialState) {
 // 利用事件循环机制实现一个简单的批量更新
 // 在当前任务中触发的更新保存起来，放在后面的微任务或者下一轮宏任务再更新
 // 如果触发多次，表现就是最终更新一次
-function useBatchUpdate(_dispatch) {
+function old_useBatchUpdate(_dispatch) {
   let dispatching = false;
   let payload = {};
 
@@ -75,6 +75,39 @@ function useBatchUpdate(_dispatch) {
   }
 }
 
+// 第二次尝试
+function useBatchUpdate(_dispatch, store) {
+  let dispatching = false;
+  const pendingUpdates = []; // 使用数组保存连续触发的更新，现在支持传入函数了
+
+  return function wrap(_updateObjectOrCallback) {
+    pendingUpdates.push(_updateObjectOrCallback);
+
+    if (dispatching) return;
+    dispatching = true;
+
+    const callback = () => {
+      // 如果是函数，就将最新的state作为参数传入
+      // 这里实际上已经算是完成store.dispatch的工作了😝
+      let newState = store.getState();
+      for (const update of pendingUpdates) {
+        const updateState = typeof update === 'function'
+          ? update(newState)
+          : update;
+        newState = { ...newState, ...updateState };
+      }
+
+      dispatching = false;
+      pendingUpdates.length = 0;
+      _dispatch(newState);
+    };
+
+    // 下一轮宏任务才更新
+    setTimeout(callback);
+    // Promise.resolve().then(callback);
+  }
+}
+
 const UpdateKey = 'UPDATE';
 const store = createStore(
   function reducer(state = {}, action = {}) {
@@ -89,21 +122,27 @@ const store = createStore(
   { count: 0 },
 );
 
-const setState = useBatchUpdate(payload => store.dispatch({ type: UpdateKey, payload, }));
+const setState = useBatchUpdate(
+  payload => store.dispatch({ type: UpdateKey, payload, }),
+  store,
+);
 
 const unsub1 = store.subscribe((state) => {
   console.log(`update!`, state);
 });
 
 // 由于batchUpdate中使用setTimeout，所以下面四次调用只会触发一次更新
-setState({ count: 1 });
+setState(prev => ({ ...prev, count: prev.count + 1 }));
 console.log('第一次调用', JSON.stringify(store.getState())); // { count: 0 }
 
 setState({ newProp: 'new-prop' });
 console.log('第二次调用', JSON.stringify(store.getState())); // { count: 0 }
 
 Promise.resolve().then(() => {
-  setState({ count: 2 });
+  setState(prev => {
+    console.log('setState callback 参数', JSON.stringify(prev));
+    return { ...prev, count: prev.count + 2 };
+  });
   setState({ newProp2: 'new-prop2' });
   console.log('微任务中调用', JSON.stringify(store.getState())); // { count: 0 }
 });
@@ -115,4 +154,3 @@ setTimeout(() => {
   unsub1();
   setState({});
 });
-
