@@ -3,7 +3,7 @@
 打好基础！
 
 ## js
-1. [ ] 《你不知道的JavaScript（上卷）》（ing）
+1. [ ] 《你不知道的JavaScript（上卷）》 <progress max="100" min="0" value="55"></progress>
 2. [ ] 《你不知道的JavaScript（中卷）》
 3. [ ] 《你不知道的JavaScript（下卷）》
 
@@ -11,4 +11,4 @@
 
 - js
   1. [闭包](./js/闭包.md)
-  2. [this（未完成）](./js/this.md)
+  2. [this](./js/this.md) <progress max="100" min="0" value="40"></progress>
