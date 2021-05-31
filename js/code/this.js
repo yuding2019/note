@@ -1,39 +1,16 @@
-var aGlobal = 'a-global';
-
-function fun1() {
-  'use strict';
-
+let _ref;
+function Student(name, age) {
+  this.name = name;
+  this.age = age;
+  
   debugger;
-  this.aGlobal; // TypeError
+  console.log(this);
+  _ref = this;
+
+  return { a: 1 };
 }
 
-function fun2() {
-  fun1();
-  this.aGlobal; // Global.aGlobal
-}
+const NewStudent = Student.bind({ a: 1 });
 
-// fun2();
-
-const objWithFun = {
-  prop1: 'prop 1',
-  fun: function fun() {
-    debugger;
-    this.prop1; // objWithFun.prop1
-  }
-}
-// objWithFun.fun();
-
-const objWithFunInDeeper = {
-  outerProp: 'outer prop',
-  innerObj: {
-    innerProp: 'inner prop',
-    fun: function fun() {
-      debugger;
-      this.innerProp; // 'inner prop'
-      this.outerProp; // undefined
-    }
-  }
-}
-// objWithFunInDeeper.innerObj.fun();
-
-
+const stu = new NewStudent('name', 18);
+console.log(_ref, stu, _ref === stu);
