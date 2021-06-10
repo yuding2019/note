@@ -182,3 +182,28 @@ console.log(testBind(3)); // 6
 ```
 
 > 这里的全部实现都比较简单，并没有考虑很多边界条件
+
+## 箭头函数
+
+箭头函数本身没`this`，它的`this`是“继承”于上层函数或者全局的`this`
+
+```js
+function outerFun() {
+  debugger;
+  const ref = this;
+
+  return () => {
+    console.log(this, this === ref); // { a: 1 } true
+  }
+}
+
+outerFun.call({ a: 1 })();
+```
+
+```js
+// `call`也不能改变
+const arrow = () => {
+  console.log(this.a); // undefined
+}
+arrow.call({ a: 1 });
+```
