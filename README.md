@@ -11,4 +11,5 @@
 
 - js
   1. [闭包](./js/闭包.md)
-  2. [this](./js/this.md) <progress max="100" min="0" value="40"></progress>
+  2. [this](./js/this.md)
+  3. [types](./js/types.md) (未完成)
