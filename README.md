@@ -12,4 +12,4 @@
 - js
   1. [闭包](./js/闭包.md)
   2. [this](./js/this.md)
-  3. [types](./js/types.md) (未完成)
+  3. [types](./js/types.md)
