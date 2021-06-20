@@ -166,8 +166,11 @@ Function.prototype.myCall = function(context, ...args) {
 // 取巧实现😁
 Function.prototype.myBind = function(context, ...args) {
   const fun = this;
-  return function(..._args) {
-    // 23333
+  return function helper(..._args) {
+    // 通过new调用bind后的函数
+    if (this instanceof helper) {
+      return new fun(...args, ..._args);
+    }
     return fun.myCall(context, ...args, ..._args);
   }
 }
@@ -179,6 +182,16 @@ function fun1(a, b, c) {
 
 const testBind = fun1.myBind({ hello: 'world' }, 1, 2);
 console.log(testBind(3)); // 6
+
+function fun2(arg1, arg2) {
+  this.arg1 = arg1;
+  this.arg2 = arg2;
+  console.log(this);
+}
+// fun2 {arg1: "arg1", arg2: "arg2"}
+const testNew = new (fun2.myBind({ a: 1 }, 'arg1'))('arg2');
+// fun2 {arg1: "arg3", arg2: "arg4"}
+const testBindNew = new (fun2.bind({ a: 2 }, 'arg3'))('arg4');
 ```
 
 > 这里的全部实现都比较简单，并没有考虑很多边界条件
