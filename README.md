@@ -3,9 +3,9 @@
 打好基础！
 
 ## js
-1. [ ] 《你不知道的JavaScript（上卷）》 <progress max="100" min="0" value="55"></progress>
+1. [x] 《你不知道的JavaScript（上卷）》
 2. [ ] 《你不知道的JavaScript（中卷）》
-3. [ ] 《你不知道的JavaScript（下卷）》
+3. [x] 《你不知道的JavaScript（下卷）》
 
 ## directory
 
