@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图片懒加载</title>
+  <style>
+    .wrapper {
+      height: 900px;
+      overflow: auto;
+    }
+
+    .wrapper img {
+      display: block;
+      width: auto;
+      height: 450px;
+      position: relative;
+      background-color: #7bed9f;
+    }
+
+    .wrapper img::after {
+      position: absolute;
+      content: attr(data-state);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .wrapper .long-content {
+      width: 100%;
+      height: 500px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <img src="" alt="" id="lazy1" data-state="unload">
+    <div class="long-content">very long content</div>
+    <img src="" alt="" id="lazy2" data-state="unload">
+  </div>
+  <script>
+    const lazyImgs = [
+      'http://img.netbian.com/file/newc/fa520a1f510ddd7e00144ef0c2f556f4.jpg',
+      'http://img.netbian.com/file/newc/0fb46a01e9b1541ce184bf6e8ded35c5.jpg',
+    ];
+
+    const wrapper = document.querySelector('.wrapper');
+    const lazyImg1 = document.querySelector('#lazy1');
+    const lazyImg2 = document.querySelector('#lazy2');
+
+    function lazy(target, value) {
+      const parent = target.parentNode || document.body;
+
+      const handleScroll = () => {
+        console.log(target.scrollTop);
+        if (!isView(target)) return;
+
+        if (target.dataset.state !== 'unload') return;
+
+        target.dataset.state = 'loading';
+        const img = new Image();
+        img.src = value;
+        img.addEventListener('load', () => {
+          target.src = value;
+          target.dataset.state = 'success';
+          parent.removeEventListener('scroll', handleScroll);
+        });
+      }
+
+      parent.addEventListener('scroll', handleScroll);
+      handleScroll();
+    }
+
+    function isView(target) {
+      const parent = target.parentNode || document.body;
+
+      const { offsetHeight: pH, offsetWidth: pW } = parent;
+      const { top, left, height, width } = target.getBoundingClientRect();
+      return top < pH;
+    }
+
+    lazy(lazyImg1, lazyImgs[0]);
+    lazy(lazyImg2, lazyImgs[1]);
+  </script>
+</body>
+</html>

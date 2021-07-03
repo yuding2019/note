@@ -6,6 +6,7 @@
 1. [x] 《你不知道的JavaScript（上卷）》
 2. [ ] 《你不知道的JavaScript（中卷）》
 3. [x] 《你不知道的JavaScript（下卷）》
+4. [ ] 《JavaScript语言精粹》
 
 ## directory
 
