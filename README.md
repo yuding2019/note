@@ -14,3 +14,4 @@
   1. [闭包](./js/闭包.md)
   2. [this](./js/this.md)
   3. [types](./js/types.md)
+  4. [懒加载](./js/懒加载.md)
