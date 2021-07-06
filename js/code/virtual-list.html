@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>虚拟滚动</title>
+  <style>
+    .wrapper {
+      width: 400px;
+      height: 600px;
+      border: 1px solid #bdc3c7;
+      overflow: auto;
+      margin: 0 auto;
+      padding: 10px;
+      list-style: none;
+      position: relative;
+    }
+
+    #list {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #list .item {
+      padding: 10px 20px;
+      border: 1px solid #dff9fb;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper" id="listWrap">
+    <div id="height"></div>
+    <ul id="list"></ul>
+  </div>
+  <script>
+    window.VLElementUtils = {
+      create(node, parent, end = true) {
+        const {
+          content,
+          host,
+        } = node;
+
+        const item = host ? host : document.createElement('li');
+        if (!host) {
+          item.className = 'item';
+          item.textContent = content;
+        }
+        node.host = item;
+        node.new = false;
+
+        // TODO 
+        end ? parent.appendChild(item) : undefined;
+      },
+      remove(node, parent, destory = false) {
+        const target = node.host;
+        if (target) {
+          parent.removeChild(target);
+        }
+        if (destory) {
+          node.host = null;
+        }
+        node.new = true;
+      },
+      render(nodes, parent) {
+        nodes.forEach(node => {
+          if (node.deleted) {
+            this.remove(node, parent, false);
+            return;
+          }
+
+          if (node.new) {
+            this.create(node, parent, true);
+            return;
+          }
+        });
+      }
+    }
+  </script>
+  <script>
+    const listWrap = document.querySelector('#listWrap');
+    const list = document.querySelector('#list');
+    const divHeight = document.querySelector('#height');
+
+    const nodes = Array.from({
+      length: 1000
+    }, (_, index) => {
+      return {
+        key: index,
+        content: `item ${index + 1}`,
+        host: null,
+        new: true,
+        deleted: false,
+      }
+    });
+
+    function start() {
+      const first = nodes[0];
+
+      window.VLElementUtils.create(first, list);
+      const height = first.host.offsetHeight;
+      const wrapHeight = listWrap.clientHeight;
+
+      const count = ~~(wrapHeight / height) + 4;
+      divHeight.style.width = '0px';
+      divHeight.style.height = `${height * nodes.length}px`;
+
+      let startIndex = 0;
+      let endIndex = startIndex + count;
+      let renderedNodes = nodes.slice(startIndex, endIndex);
+      window.VLElementUtils.render(renderedNodes, list);
+
+      let time = 0;
+      let scrollDir = 1;
+      listWrap.addEventListener('wheel', (e) => {
+        scrollDir = e.deltaY > 0 ? 1 : -1;
+      });
+      listWrap.addEventListener('scroll', (e) => {
+        const {
+          target: {
+            scrollTop
+          },
+          timeStamp
+        } = e;
+        if (scrollTop + wrapHeight >= height * nodes.length) return;
+        if (timeStamp - time > 16) {
+          time = timeStamp;
+
+          startIndex = ~~(scrollDir * scrollTop / height);
+          if (startIndex + count >= nodes.length) {
+            startIndex = nodes.length - count + 3;
+          } else if (startIndex <= 0) {
+            startIndex = 0;
+          }
+          endIndex = startIndex + count;
+          if (scrollDir < 0) {
+            debugger;
+          }
+
+          const newNodes = nodes.slice(startIndex, endIndex);
+          const _nodes = [];
+          let newStart = 0;
+          let oldEnd = 0;
+          if (renderedNodes.includes(newNodes[0])) {
+            for (let i = 0; i < count; i++) {
+              const node = newNodes[i];
+              if (renderedNodes.includes(node)) {
+                node.new = false;
+                _nodes.push(node);
+                newStart = i;
+              } else {
+                break;
+              }
+            }
+            for (let i = 0; i < count; i++) {
+              const node = renderedNodes[i];
+              if (_nodes.includes(node)) {
+                oldEnd = i;
+                break;
+              }
+              node.deleted = true;
+            }
+          } else {
+            renderedNodes.forEach(node => {
+              node.deleted = true;
+            });
+            oldEnd = count;
+          }
+
+          window.VLElementUtils.render([...renderedNodes, ..._nodes, ...newNodes], list);
+          renderedNodes = newNodes;
+          list.style.transform = `translateY(${scrollTop}px)`;
+        }
+      });
+    }
+    start();
+  </script>
+</body>
+
+</html>
