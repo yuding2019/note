@@ -97,6 +97,34 @@ console.log(String(b));
 
 > 数组自己实现了`toString`方法，返回元素的字符串形式，等价于`[].join(',')`，所以空数组转数值为0，非空数组按照上述步骤判断即可
 
+## 2021-7-7更新  
+
+ES6后新增了`symbol`类型，其中内置有`Symbol.toPrimitive`，该symbol在对象转基本类型时优先级最高，如果该对象实现这个方法，除了转布尔值，转其他原始值时都会调用这个方法
+
+> 内置的`Date`对象实现了这个方法，[详情请前往MDN了解](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Symbol/toPrimitive)
+
+```js
+const a = {
+  valueOf() {
+    console.log('call valueOf');
+    return this;
+  },
+  toString() {
+    console.log('call toString');
+    return '1';
+  },
+  [Symbol.toPrimitive]() {
+    console.log('call toPrimitive');
+    return 2;
+  }
+}
+Boolean(a); // true
+Number(a);  // call toPrimitive  2
+String(a);  // call toPrimitive  '2'
+Symbol(a);  // call toPrimitive  Symbol(2)
+BigInt(a);  // call toPrimitive  2n
+```
+
 > ##
 > ### 如有错误，欢迎批评指正
 > ##
