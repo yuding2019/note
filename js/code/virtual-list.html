@@ -55,10 +55,13 @@
           item.textContent = content;
         }
         node.host = item;
-        node.new = false;
 
-        // TODO 
-        end ? parent.appendChild(item) : undefined;
+        if (end) {
+          parent.appendChild(item);
+          return;
+        }
+        const first = parent.childNodes[0];
+        parent.insertBefore(item, first);
       },
       remove(node, parent, destory = false) {
         const target = node.host;
@@ -68,17 +71,20 @@
         if (destory) {
           node.host = null;
         }
-        node.new = true;
       },
-      render(nodes, parent) {
+      render(nodes, parent, dir) {
         nodes.forEach(node => {
           if (node.deleted) {
             this.remove(node, parent, false);
+            node.deleted = false;
+            node.new = true;
             return;
           }
 
           if (node.new) {
-            this.create(node, parent, true);
+            this.create(node, parent, dir === 1);
+            node.new = false;
+            node.deleted = false;
             return;
           }
         });
@@ -87,8 +93,8 @@
   </script>
   <script>
     const listWrap = document.querySelector('#listWrap');
-    const list = document.querySelector('#list');
     const divHeight = document.querySelector('#height');
+    const list = document.querySelector('#list');
 
     const nodes = Array.from({
       length: 1000
@@ -102,27 +108,79 @@
       }
     });
 
-    function start() {
+    function init() {
       const first = nodes[0];
 
       window.VLElementUtils.create(first, list);
-      const height = first.host.offsetHeight;
-      const wrapHeight = listWrap.clientHeight;
+      const itemHeight = first.host.offsetHeight;
+      const viewHeight = listWrap.clientHeight;
 
-      const count = ~~(wrapHeight / height) + 4;
+      const viewItemCount = ~~(viewHeight / itemHeight) + 4;
+      const listHeight = itemHeight * nodes.length;
       divHeight.style.width = '0px';
-      divHeight.style.height = `${height * nodes.length}px`;
+      divHeight.style.height = `${listHeight}px`;
 
-      let startIndex = 0;
-      let endIndex = startIndex + count;
-      let renderedNodes = nodes.slice(startIndex, endIndex);
-      window.VLElementUtils.render(renderedNodes, list);
+      return {
+        listHeight,
+        viewHeight,
+        itemHeight,
+        viewItemCount,
+      };
+    }
 
-      let time = 0;
+    function diff(oldNodes, newNodes, scrollDir) {
+      const len = oldNodes.length;
+
+      if (
+        (scrollDir === 1 && !newNodes.includes(oldNodes[len - 1])) ||
+        (scrollDir === -1 && !newNodes.includes(oldNodes[0]))
+      ) {
+        oldNodes.forEach(node => {
+          node.deleted = true;
+        });
+        return [...oldNodes, ...newNodes];
+      }
+
+      const mixed = [];
+      const _newNodes = [];
+      const deletedNodes = [];
+      // 先将新节点里面不被删除的节点分离
+      for (const node of newNodes) {
+        if (node.new) {
+          _newNodes.push(node);
+        } else {
+          mixed.push(node);
+        }
+      }
+      // 
+      for (const old of oldNodes) {
+        if (!mixed.includes(old)) {
+          old.deleted = true;
+          deletedNodes.push(old);
+        }
+      }
+      return [...deletedNodes, ...mixed, ..._newNodes];
+    }
+
+    function start() {
+      const {
+        viewHeight,
+        itemHeight,
+        viewItemCount,
+        listHeight,
+      } = init();
+
+      let start = 0;
+      let end = start + viewItemCount;
+      let renderedNodes = nodes.slice(start, end);
+      window.VLElementUtils.render(renderedNodes, list, 1);
+
       let scrollDir = 1;
       listWrap.addEventListener('wheel', (e) => {
         scrollDir = e.deltaY > 0 ? 1 : -1;
       });
+
+      let timer = 0;
       listWrap.addEventListener('scroll', (e) => {
         const {
           target: {
@@ -130,52 +188,20 @@
           },
           timeStamp
         } = e;
-        if (scrollTop + wrapHeight >= height * nodes.length) return;
-        if (timeStamp - time > 16) {
+        if (scrollTop + viewHeight >= listHeight) return;
+        if (timeStamp - timer > 16) {
           time = timeStamp;
 
-          startIndex = ~~(scrollDir * scrollTop / height);
-          if (startIndex + count >= nodes.length) {
-            startIndex = nodes.length - count + 3;
-          } else if (startIndex <= 0) {
-            startIndex = 0;
+          start = ~~(scrollTop / itemHeight);
+          if (start + viewItemCount >= nodes.length) {
+            start = nodes.length - viewItemCount + 4;
+          } else if (start <= 0) {
+            start = 0;
           }
-          endIndex = startIndex + count;
-          if (scrollDir < 0) {
-            debugger;
-          }
+          end = start + viewItemCount;
 
-          const newNodes = nodes.slice(startIndex, endIndex);
-          const _nodes = [];
-          let newStart = 0;
-          let oldEnd = 0;
-          if (renderedNodes.includes(newNodes[0])) {
-            for (let i = 0; i < count; i++) {
-              const node = newNodes[i];
-              if (renderedNodes.includes(node)) {
-                node.new = false;
-                _nodes.push(node);
-                newStart = i;
-              } else {
-                break;
-              }
-            }
-            for (let i = 0; i < count; i++) {
-              const node = renderedNodes[i];
-              if (_nodes.includes(node)) {
-                oldEnd = i;
-                break;
-              }
-              node.deleted = true;
-            }
-          } else {
-            renderedNodes.forEach(node => {
-              node.deleted = true;
-            });
-            oldEnd = count;
-          }
-
-          window.VLElementUtils.render([...renderedNodes, ..._nodes, ...newNodes], list);
+          const newNodes = nodes.slice(start, end);
+          window.VLElementUtils.render(diff(renderedNodes, newNodes, scrollDir), list, scrollDir);
           renderedNodes = newNodes;
           list.style.transform = `translateY(${scrollTop}px)`;
         }
