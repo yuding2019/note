@@ -65,6 +65,9 @@
           target.dataset.state = 'success';
           parent.removeEventListener('scroll', handleScroll);
         });
+        img.addEventListener('error', () => {
+          target.dataset.state = 'error';
+        });
       }
 
       parent.addEventListener('scroll', handleScroll);
