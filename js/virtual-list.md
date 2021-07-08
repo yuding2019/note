@@ -171,6 +171,15 @@ listWrap.addEventListener('scroll', (e) => {
 });
 ```
 
+通过监听`wheel`事件可以判断鼠标滚轮的方向，`deltaY`大于0就行向下滚动
+
+```js
+let scrollDir = 1;
+listWrap.addEventListener('wheel', (e) => {
+  scrollDir = e.deltaY > 0 ? 1 : -1;
+});
+```
+
 > 完整代码见`/code/virtual-list.html`
 
 > ##
