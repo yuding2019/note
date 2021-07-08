@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>虚拟滚动</title>
   <style>
-    .wrapper {
+    #list-wrapper {
       width: 400px;
       height: 600px;
       border: 1px solid #bdc3c7;
@@ -30,14 +30,14 @@
 
     #list .item {
       padding: 10px 20px;
-      border: 1px solid #dff9fb;
+      border: 1px solid #ff9696;
       margin: 5px 0;
     }
   </style>
 </head>
 
 <body>
-  <div class="wrapper" id="listWrap">
+  <div id="list-wrapper">
     <div id="height"></div>
     <ul id="list"></ul>
   </div>
@@ -92,7 +92,7 @@
     }
   </script>
   <script>
-    const listWrap = document.querySelector('#listWrap');
+    const listWrap = document.querySelector('#list-wrapper');
     const divHeight = document.querySelector('#height');
     const list = document.querySelector('#list');
 
@@ -189,22 +189,21 @@
           timeStamp
         } = e;
         if (scrollTop + viewHeight >= listHeight) return;
-        if (timeStamp - timer > 16) {
-          time = timeStamp;
+        if (timeStamp - timer < 16) return;
+        time = timeStamp;
 
-          start = ~~(scrollTop / itemHeight);
-          if (start + viewItemCount >= nodes.length) {
-            start = nodes.length - viewItemCount + 4;
-          } else if (start <= 0) {
-            start = 0;
-          }
-          end = start + viewItemCount;
-
-          const newNodes = nodes.slice(start, end);
-          window.VLElementUtils.render(diff(renderedNodes, newNodes, scrollDir), list, scrollDir);
-          renderedNodes = newNodes;
-          list.style.transform = `translateY(${scrollTop}px)`;
+        start = ~~(scrollTop / itemHeight);
+        if (start + viewItemCount >= nodes.length) {
+          start = nodes.length - viewItemCount + 4;
+        } else if (start <= 0) {
+          start = 0;
         }
+        end = start + viewItemCount;
+
+        const newNodes = nodes.slice(start, end);
+        window.VLElementUtils.render(diff(renderedNodes, newNodes, scrollDir), list, scrollDir);
+        renderedNodes = newNodes;
+        list.style.transform = `translateY(${scrollTop}px)`;
       });
     }
     start();
