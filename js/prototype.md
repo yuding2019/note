@@ -77,6 +77,64 @@ arr.push(1);
 
 > 像`number`，`string`之类的基本类型也可以直接调用对应内置对象上的方法，其中涉及到`装箱`，`拆箱`的操作，引擎会自动将原始值转为对应的封装对象，然后就可以调用对应的方法了
 
+## new
+
+总所周知，js里面是没有构造函数的，只有构造函数调用，也就是将普通函数通过`new`来调用
+
+`new`调用过程中，会在函数内部生成一个对象，并让`this`指向这个对象，并且进行原型链接，然后执行函数体，如果函数有自己的返回值，就返回对应的返回值，如果没有就返回`this`指向的对象
+
+```js
+function opNew(fn, ...params) {
+  const obj = {};
+  const res = fn.call(obj, ...params);
+  Object.setPrototypeOf(obj, fn.prototype);
+  return res || obj;
+}
+
+function Student(name, age) {
+  this.name = name;
+  this.age = age;
+}
+
+const stu1 = new Student('stu1', 18); // Student {name: "stu1", age: 18}
+const stu2 = opNew(Student, 'stu2', 18); // Student {name: "stu2", age: 18}
+```
+
+最后效果：
+
+![实现new](./img/new.png)
+
+## instanceof
+
+js的`instanceof`本质上也是进行原型链查找
+
+> MDN：[`instanceof`运算符用于检测构造函数的`prototype`属性是否出现在某个实例对象的原型链上](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/instanceof)。
+
+```js
+const stu = opNew(Student, 'stu2', 18);
+stu instanceof Student; // true
+Object.setPrototypeOf(stu, Array.prototype);
+stu1 instanceof Array; // true
+```
+
+简单实现
+
+```js
+function instanceOf(left, right) {
+  if (typeof right !== 'function') {
+    throw new TypeError('err');
+  }
+  const target = Object.getPrototypeOf(left);
+  let proto = right.prototype;
+  while (proto) {
+    if (target === proto) return true;
+    proto = Object.getPrototypeOf(proto);
+  }
+  return false;
+}
+instanceOf(stu, Student); // true
+```
+
 ## 原型继承（TODO）
 
 > ##
