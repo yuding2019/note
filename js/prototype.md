@@ -36,7 +36,48 @@ const node = linkList.next;
 
 总所周知，js是一门基于原型的面向对象语言。
 
-其实对象的原型就是通过某种方式链接在该对象上的对象而已。
+其实对象的原型就是通过某种方式链接在该对象上的对象而已。对于普通对象，我们可以使用`Object.create`来进行原型的链接
+
+> `Object.create`详情[前往MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/create)阅读
+
+```js
+// 这种方式会创建一个完全的空对象，没有任何属性，也没有默认的原型，这样作为手动链接的终点原型
+const endProto = Object.create(null);
+endProto.value = 'end of proto';
+
+const proto1 = Object.create(endProto);
+proto1.value = 'this a proto too';
+
+const obj = Object.create(proto1);
+obj.value = 'obj';
+
+// 因为创建的 endProto 没有链接到Object.prototype，所以这几个对象不存在任何方法
+Object.isPrototypeOf.call(proto1, obj); // true
+Object.isPrototypeOf.call(endProto, obj); // true
+```
+
+可以看到，对象的原型就是一个普通的对象，当被隐式的链接到另一个对象上时，就成为了另一个对象的原型
+
+> 另一个修改原型的方法是`Object.setPrototypeOf`，详情请查看[MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/setPrototypeOf)
+
+## 原型链
+
+上面我们通过`Object.create`将三个对象链接在一起，构成了一个链式结构，就是原型链。
+
+原型链最大的好处就是我们可以非常方便的借用其他对象的方法与属性。
+
+```js
+const arr = [];
+arr.push(1);
+```
+
+平时普通声明的对象、数组之类的都自动链接到对应的原型上，所以我们能直接在数组上调用`push`方法。
+
+在对象上取属性时，如果本身不存在这个属性，引擎就会自动沿着这条链向上查找，直到找到同名属性或者到达终点（null）
+
+> 像`number`，`string`之类的基本类型也可以直接调用对应内置对象上的方法，其中涉及到`装箱`，`拆箱`的操作，引擎会自动将原始值转为对应的封装对象，然后就可以调用对应的方法了
+
+## 原型继承（TODO）
 
 > ##
 > ### 如有错误，欢迎批评指正
