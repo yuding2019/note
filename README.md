@@ -14,6 +14,10 @@
 1. [ ] 《HTML5与CSS3权威指南（第4版·上册）》
 2. [ ] 《HTML5与CSS3权威指南（第4版·下册）》
 
+## HTTP
+
+1. [ ] 《HTTP权威指南》
+
 ## 目录
 
 - js
@@ -23,3 +27,6 @@
   4. [懒加载](./js/懒加载.md)
   5. [虚拟列表](./js/virtual-list.md)
   6. [prototype](./js/prototype.md)
+
+- http
+  1. [http-01](./http/http-01.md)
