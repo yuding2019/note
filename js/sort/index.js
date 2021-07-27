@@ -1,33 +1,35 @@
 const { performance } = require('perf_hooks');
 const { bubble, bubble2 } = require('./bubble');
+const qucik = require('./quick');
+
+function testInner(source) {
+  const start = performance.now();
+  const res = source.sort((a, b) => a - b);
+  const end = performance.now();
+
+  console.log('内置排序耗时：', end - start, 'ms');
+  return res.join(',');
+}
 
 /**
- * 
  * @param {Function} fn - 排序方法
  * @param {Array<number>} source - 原数组
  */
-function test(fn, source) {
-  const copy1 = [...source];
-  const copy2 = [...source];
+function test(name, sort, source) {
+  const start = performance.now();
+  const res = sort(source);
+  const end = performance.now();
 
-  const start1 = performance.now();
-  const innerSort = copy1.sort((a, b) => a - b);
-  const end1 = performance.now();
-  
-  const start2 = performance.now();
-  const res = fn(copy2);
-  const end2 = performance.now();
-
-  console.log('内置排序耗时：', end1 - start1, 'ms');
-  console.log('排序耗时：', end2 - start2, 'ms');
-  if (innerSort.join(',') !== res.join(',')) {
+  console.log(name, '排序耗时：', end - start, 'ms');
+  if (stdResult !== res.join(',')) {
     console.log('你的排序结果和内置排序结果不一致');
   }
-  console.log('\n');
 }
 
-const len = 1000;
+const len = 100000;
 const arr = Array.from({ length: len }, () => ~~(Math.random() * len));
+const stdResult = testInner([...arr]);
 
-test(bubble, [...arr]);
-// test(bubble2, [...arr]);
+test('bubble', bubble, [...arr]);
+test('qucik', qucik, [...arr]);
+// console.log(qucik([5, 3, 6, 1, 2, 4]));
