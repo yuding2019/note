@@ -1,0 +1,10 @@
+{
+  "name": "note",
+  "version": "0.0.0",
+  "description": "yuding的笔记",
+  "main": "index.js",
+  "repository": "https://github.com/yuding2019/note.git",
+  "author": "yuding <yu_ding2019@outlook.com>",
+  "license": "MIT",
+  "private": true
+}
